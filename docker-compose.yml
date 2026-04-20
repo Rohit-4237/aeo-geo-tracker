@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+      - ./frontend:/app/../frontend
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  # Optional: serve frontend via nginx if you prefer separation
+  # frontend:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "3000:80"
+  #   volumes:
+  #     - ./frontend:/usr/share/nginx/html:ro
