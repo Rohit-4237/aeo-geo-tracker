@@ -11,7 +11,7 @@ if not exist ".env" (
 )
 
 echo Installing / checking dependencies...
-C:\Python314\python.exe -m pip install -r requirements.txt -q --prefer-binary --no-warn-script-location 2>nul
+python -m pip install -r requirements.txt -q --prefer-binary --no-warn-script-location 2>nul
 
 REM Kill any process already using port 3000
 echo Clearing port 3000...
@@ -30,7 +30,7 @@ echo.
 
 start /b cmd /c "timeout /t 4 /nobreak >nul && start http://localhost:3000"
 
-C:\Python314\python.exe -m uvicorn main:app --host 127.0.0.1 --port 3000
+python -m uvicorn main:app --host 127.0.0.1 --port 3000
 
 echo.
 pause
