@@ -11,7 +11,21 @@ def query(prompt: str, brands: list[dict], api_key: str) -> dict:
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an AI assistant specialising in the Indian market. "
+                        "Answer every question strictly from an Indian perspective — "
+                        "focus on Indian consumers, Indian brands and competitors, "
+                        "pricing in Indian Rupees (INR), regulations under Indian law, "
+                        "and regional availability across India. If asked to compare or "
+                        "recommend products/services, only consider options available "
+                        "and relevant in India."
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
             max_tokens=1024,
             temperature=0.3,
         )

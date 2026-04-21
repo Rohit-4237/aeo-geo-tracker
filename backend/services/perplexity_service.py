@@ -12,7 +12,21 @@ def query(prompt: str, brands: list[dict], api_key: str) -> dict:
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     payload = {
         "model": "llama-3.1-sonar-small-128k-online",
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are an AI assistant specialising in the Indian market. "
+                    "Answer every question strictly from an Indian perspective — "
+                    "focus on Indian consumers, Indian brands and competitors, "
+                    "pricing in Indian Rupees (INR), regulations under Indian law, "
+                    "and regional availability across India. If asked to compare or "
+                    "recommend products/services, only consider options available "
+                    "and relevant in India."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
         "max_tokens": 1024,
     }
     try:

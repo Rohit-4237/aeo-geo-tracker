@@ -13,7 +13,22 @@ GEMINI_URL = (
 
 def query(prompt: str, brands: list[dict], api_key: str) -> dict:
     url = f"{GEMINI_URL}?key={api_key}"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    payload = {
+        "systemInstruction": {
+            "parts": [{
+                "text": (
+                    "You are an AI assistant specialising in the Indian market. "
+                    "Answer every question strictly from an Indian perspective — "
+                    "focus on Indian consumers, Indian brands and competitors, "
+                    "pricing in Indian Rupees (INR), regulations under Indian law, "
+                    "and regional availability across India. If asked to compare or "
+                    "recommend products/services, only consider options available "
+                    "and relevant in India."
+                )
+            }]
+        },
+        "contents": [{"parts": [{"text": prompt}]}],
+    }
     try:
         with httpx.Client(timeout=60) as client:
             resp = client.post(url, json=payload)
