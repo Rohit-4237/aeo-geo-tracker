@@ -100,7 +100,7 @@ function app() {
       this._statusTimer = setTimeout(() => this.statusMsg = '', ms);
     },
     async api(path, opts = {}) {
-      const url = API + (path.endsWith('/') || path.includes('?') ? path : path + '/');
+      const url = API + path;
       const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.detail || res.statusText); }
       return res.json();
