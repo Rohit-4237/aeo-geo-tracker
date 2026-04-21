@@ -1,16 +1,22 @@
+"""Gemini REST API service — synchronous, Vercel-compatible."""
 import re
+
 import httpx
+
 from services.sentiment import analyze
 
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+GEMINI_URL = (
+    "https://generativelanguage.googleapis.com/v1beta"
+    "/models/gemini-2.0-flash-lite:generateContent"
+)
 
 
-async def query(prompt: str, brands: list[dict], api_key: str) -> dict:
+def query(prompt: str, brands: list[dict], api_key: str) -> dict:
     url = f"{GEMINI_URL}?key={api_key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(url, json=payload)
+        with httpx.Client(timeout=60) as client:
+            resp = client.post(url, json=payload)
             if resp.status_code != 200:
                 err = resp.json()
                 msg = err.get("error", {}).get("message", resp.text)
@@ -18,15 +24,19 @@ async def query(prompt: str, brands: list[dict], api_key: str) -> dict:
             data = resp.json()
             text = data["candidates"][0]["content"]["parts"][0]["text"]
             return _parse(text, brands)
-    except Exception as e:
-        return _unavailable(str(e))
+    except Exception as exc:
+        return _unavailable(str(exc))
 
 
 def _unavailable(error: str) -> dict:
     return {
-        "available": False, "error": error,
-        "raw_response": "", "brand_mentions": {}, "cited_urls": {},
-        "sentiment": "neutral", "sentiment_score": 0.0,
+        "available": False,
+        "error": error,
+        "raw_response": "",
+        "brand_mentions": {},
+        "cited_urls": {},
+        "sentiment": "neutral",
+        "sentiment_score": 0.0,
     }
 
 
@@ -41,7 +51,10 @@ def _parse(text: str, brands: list[dict]) -> dict:
         cited[name] = list(set(u for u in urls if domain in u.lower()))
     s = analyze(text)
     return {
-        "available": True, "raw_response": text,
-        "brand_mentions": mentions, "cited_urls": cited,
-        "sentiment": s["label"], "sentiment_score": s["score"],
+        "available": True,
+        "raw_response": text,
+        "brand_mentions": mentions,
+        "cited_urls": cited,
+        "sentiment": s["label"],
+        "sentiment_score": s["score"],
     }

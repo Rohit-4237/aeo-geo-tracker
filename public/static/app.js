@@ -55,8 +55,8 @@ function app() {
       { id: 'chatgpt',    label: 'ChatGPT',          icon: 'fa-brands fa-openai',  color: '#10a37f', note: '' },
       { id: 'gemini',     label: 'Gemini',            icon: 'fa-solid fa-g',        color: '#4285f4', note: '' },
       { id: 'perplexity', label: 'Perplexity',        icon: 'fa-solid fa-bolt',     color: '#7c3aed', note: '' },
-      { id: 'google_aio', label: 'Google AI Overview',icon: 'fa-brands fa-google',  color: '#ea4335', note: 'Best-effort' },
-      { id: 'google_aim', label: 'Google AI Mode',    icon: 'fa-brands fa-google',  color: '#34a853', note: 'Best-effort' },
+      { id: 'google_aio', label: 'Google AI Overview',icon: 'fa-brands fa-google',  color: '#ea4335', note: 'Local only' },
+      { id: 'google_aim', label: 'Google AI Mode',    icon: 'fa-brands fa-google',  color: '#34a853', note: 'Local only' },
     ],
 
     // Results
@@ -217,19 +217,31 @@ function app() {
     async loadRuns() {
       try { this.runs = await this.api('/runs'); } catch (e) { /* silent */ }
     },
+
     async startRun() {
       if (this.newRun.platforms.length === 0) return;
       this.startingRun = true;
       try {
         const name = this.newRun.name || `Run ${new Date().toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}`;
+
+        // Step 1: Create run document (fast — returns run_id immediately)
         const res = await this.api('/runs', { method: 'POST', body: JSON.stringify({ name, platforms: this.newRun.platforms }) });
-        this.notify(`Run started (ID: ${res.run_id})`, 'success');
         this.newRun.name = '';
         await this.loadRuns();
+
+        // Step 2: Start polling for progress
         this._startPolling(res.run_id);
+        this.notify(`Run started — tracking in progress…`, 'info', 120000);
+
+        // Step 3: Fire-and-forget the execute call (long-running, up to 5 min on Vercel Pro)
+        this.api(`/runs/${res.run_id}/execute`, { method: 'POST' })
+          .then(() => this.notify('Run completed!', 'success'))
+          .catch(e  => this.notify(`Run error: ${e.message}`, 'error'));
+
       } catch (e) { this.notify(e.message, 'error'); }
       finally { this.startingRun = false; }
     },
+
     _startPolling(runId) {
       clearInterval(this._pollTimer);
       this._pollTimer = setInterval(async () => {
@@ -237,14 +249,15 @@ function app() {
           const run = await this.api(`/runs/${runId}`);
           const idx = this.runs.findIndex(r => r.id === runId);
           if (idx >= 0) this.runs[idx] = run;
+          else this.runs.unshift(run);
           this.activeRunCount = this.runs.filter(r => r.status === 'running').length;
           if (run.status === 'completed' || run.status === 'failed') {
             clearInterval(this._pollTimer);
-            this.notify(`Run "${run.name}" ${run.status}!`, run.status === 'completed' ? 'success' : 'error');
           }
         } catch (e) { clearInterval(this._pollTimer); }
       }, 4000);
     },
+
     async deleteRun(id) {
       if (!confirm('Delete this run and all its results?')) return;
       await this.api(`/runs/${id}`, { method: 'DELETE' });

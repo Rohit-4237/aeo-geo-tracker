@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from database import get_db
-from models import BrandConfig
+from firebase_db import get_db
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/brands", tags=["brands"])
 
@@ -15,22 +13,34 @@ class BrandIn(BaseModel):
 
 
 @router.get("/")
-async def list_brands(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(BrandConfig).order_by(BrandConfig.is_primary.desc(), BrandConfig.id))
-    return [{"id": b.id, "name": b.name, "url": b.url, "is_primary": b.is_primary} for b in result.scalars()]
+def list_brands():
+    db = get_db()
+    docs = (
+        db.collection("brand_configs")
+        .order_by("is_primary", direction="DESCENDING")
+        .order_by("created_at")
+        .stream()
+    )
+    return [{"id": d.id, **d.to_dict()} for d in docs]
 
 
 @router.post("/")
-async def save_brands(brands: list[BrandIn], db: AsyncSession = Depends(get_db)):
-    await db.execute(delete(BrandConfig))
+def save_brands(brands: list[BrandIn]):
+    db = get_db()
+    col = db.collection("brand_configs")
+    # Delete all existing brands
+    for doc in col.stream():
+        doc.reference.delete()
+    # Insert new set
+    now = datetime.now(timezone.utc).isoformat()
     for b in brands:
-        db.add(BrandConfig(name=b.name, url=b.url, is_primary=b.is_primary))
-    await db.commit()
+        col.add({"name": b.name, "url": b.url, "is_primary": b.is_primary, "created_at": now})
     return {"saved": len(brands)}
 
 
 @router.delete("/")
-async def clear_brands(db: AsyncSession = Depends(get_db)):
-    await db.execute(delete(BrandConfig))
-    await db.commit()
+def clear_brands():
+    db = get_db()
+    for doc in db.collection("brand_configs").stream():
+        doc.reference.delete()
     return {"cleared": True}

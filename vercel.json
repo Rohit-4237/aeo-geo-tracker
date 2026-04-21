@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 300,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    { "source": "/brands/:path*",   "destination": "/api/index" },
+    { "source": "/prompts/:path*",  "destination": "/api/index" },
+    { "source": "/runs/:path*",     "destination": "/api/index" },
+    { "source": "/analytics/:path*","destination": "/api/index" },
+    { "source": "/settings/:path*", "destination": "/api/index" },
+    { "source": "/health",          "destination": "/api/index" },
+    { "source": "/docs",            "destination": "/api/index" },
+    { "source": "/openapi.json",    "destination": "/api/index" },
+    { "source": "/(.*)",            "destination": "/" }
+  ]
+}

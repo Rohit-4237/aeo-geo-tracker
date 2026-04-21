@@ -29,11 +29,16 @@ playwright/.auth/
 Thumbs.db
 desktop.ini
 
-# IDE
+# IDE / Claude Code
 .vscode/
 .idea/
 *.swp
 *.swo
+.claude/
+
+# Firebase service-account key (never commit this)
+serviceAccountKey.json
+*serviceAccount*.json
 
 # Logs
 *.log
