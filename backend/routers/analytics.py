@@ -32,7 +32,7 @@ def _get_prompts(db) -> list[dict]:
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.get("/{run_id}/overview/")
+@router.get("/{run_id}/overview")
 def overview(run_id: str):
     """Total mentions and citations per brand across all platforms."""
     db = get_db()
@@ -52,7 +52,7 @@ def overview(run_id: str):
     return {"brands": brands, "totals": totals}
 
 
-@router.get("/{run_id}/by-prompt/")
+@router.get("/{run_id}/by-prompt")
 def by_prompt(run_id: str, platform: str | None = None):
     """Mentions per brand, per prompt, optionally filtered by platform."""
     db = get_db()
@@ -92,7 +92,7 @@ def by_prompt(run_id: str, platform: str | None = None):
     }
 
 
-@router.get("/{run_id}/citations/")
+@router.get("/{run_id}/citations")
 def citations(run_id: str):
     """Cited pages per brand per prompt."""
     db = get_db()
@@ -124,7 +124,7 @@ def citations(run_id: str):
     }
 
 
-@router.get("/{run_id}/sentiment/")
+@router.get("/{run_id}/sentiment")
 def sentiment(run_id: str):
     """Sentiment breakdown per brand across all platforms."""
     db = get_db()
@@ -153,7 +153,7 @@ def sentiment(run_id: str):
     return {"counts": counts, "scores": scores}
 
 
-@router.get("/{run_id}/errors/")
+@router.get("/{run_id}/errors")
 def errors(run_id: str):
     """Return all failed results with their error messages."""
     db = get_db()

@@ -9,7 +9,7 @@ load_dotenv()
 
 from routers import brands, prompts, tracking, analytics, settings  # noqa: E402
 
-app = FastAPI(title="AEO/GEO Tracker API", version="1.0.0")
+app = FastAPI(title="AEO/GEO Tracker API", version="1.0.0", redirect_slashes=False)
 
 # Allow all origins by default — tighten via CORS_ORIGINS env var if needed
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")

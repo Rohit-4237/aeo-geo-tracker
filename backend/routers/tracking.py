@@ -31,7 +31,7 @@ class RunRequest(BaseModel):
 
 # ── CRUD ──────────────────────────────────────────────────────────────────────
 
-@router.get("/")
+@router.get("")
 def list_runs():
     db = get_db()
     docs = (
@@ -42,7 +42,7 @@ def list_runs():
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
 
-@router.post("/")
+@router.post("")
 def start_run(req: RunRequest):
     invalid = [p for p in req.platforms if p not in PLATFORMS]
     if invalid:
@@ -73,7 +73,7 @@ def start_run(req: RunRequest):
     return {"run_id": run_ref.id, "status": "pending"}
 
 
-@router.get("/{run_id}/")
+@router.get("/{run_id}")
 def get_run(run_id: str):
     db = get_db()
     doc = db.collection("tracking_runs").document(run_id).get()
@@ -82,7 +82,7 @@ def get_run(run_id: str):
     return {"id": doc.id, **doc.to_dict()}
 
 
-@router.delete("/{run_id}/")
+@router.delete("/{run_id}")
 def delete_run(run_id: str):
     db = get_db()
     if not db.collection("tracking_runs").document(run_id).get().exists:
@@ -96,7 +96,7 @@ def delete_run(run_id: str):
 
 # ── Execute endpoint (long-running, maxDuration: 300 s) ───────────────────────
 
-@router.post("/{run_id}/execute/")
+@router.post("/{run_id}/execute")
 def execute_run(run_id: str):
     """
     Performs the AI queries for a run created by POST /runs/.

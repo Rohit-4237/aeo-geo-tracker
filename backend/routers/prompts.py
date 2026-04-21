@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 router = APIRouter(prefix="/prompts", tags=["prompts"])
 
 
-@router.get("/")
+@router.get("")
 def list_prompts():
     db = get_db()
     docs = db.collection("prompts").order_by("order_index").stream()
@@ -48,7 +48,7 @@ async def upload_prompts(file: UploadFile = File(...)):
     return {"saved": saved}
 
 
-@router.delete("/")
+@router.delete("")
 def clear_prompts():
     db = get_db()
     for doc in db.collection("prompts").stream():

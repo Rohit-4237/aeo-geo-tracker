@@ -16,7 +16,7 @@ class SettingsIn(BaseModel):
     perplexity_key: str | None = None
 
 
-@router.get("/")
+@router.get("")
 def get_settings():
     db = get_db()
     doc = db.collection("app_settings").document("main").get()
@@ -43,7 +43,7 @@ def get_settings():
     }
 
 
-@router.post("/")
+@router.post("")
 def save_settings(data: SettingsIn):
     db = get_db()
     doc_ref = db.collection("app_settings").document("main")

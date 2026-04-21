@@ -12,7 +12,7 @@ class BrandIn(BaseModel):
     is_primary: bool = False
 
 
-@router.get("/")
+@router.get("")
 def list_brands():
     db = get_db()
     docs = (
@@ -24,7 +24,7 @@ def list_brands():
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
 
-@router.post("/")
+@router.post("")
 def save_brands(brands: list[BrandIn]):
     db = get_db()
     col = db.collection("brand_configs")
@@ -38,7 +38,7 @@ def save_brands(brands: list[BrandIn]):
     return {"saved": len(brands)}
 
 
-@router.delete("/")
+@router.delete("")
 def clear_brands():
     db = get_db()
     for doc in db.collection("brand_configs").stream():
