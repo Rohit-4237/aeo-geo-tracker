@@ -15,13 +15,11 @@ class BrandIn(BaseModel):
 @router.get("")
 def list_brands():
     db = get_db()
-    docs = (
-        db.collection("brand_configs")
-        .order_by("is_primary", direction="DESCENDING")
-        .order_by("created_at")
-        .stream()
-    )
-    return [{"id": d.id, **d.to_dict()} for d in docs]
+    docs = db.collection("brand_configs").stream()
+    result = [{"id": d.id, **d.to_dict()} for d in docs]
+    # Sort in Python: primary brand first, then by creation time
+    result.sort(key=lambda x: (not x.get("is_primary", False), x.get("created_at", "")))
+    return result
 
 
 @router.post("")
